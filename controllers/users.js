@@ -1,0 +1,96 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
+
+const NotFoundError = require('../errors/not-found-err');
+const ValidationError = require('../errors/validation-err');
+const ConflictError = require('../errors/conflict-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
+
+const { JWT_SECRET = 'secret-key' } = process.env;
+
+module.exports.getUser = (req, res, next) => {
+  User.findById(req.params.userId)
+    .then((user) => {
+      if (user === null) {
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
+      }
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new ValidationError('Невалидный id'));
+        return;
+      }
+      next(err);
+    });
+};
+
+module.exports.updateUser = (req, res, next) => {
+  const currentUser = req.user._id;
+  const { email, name } = req.body;
+
+  User.findByIdAndUpdate(currentUser, { $set: { email, name } }, { new: true, runValidators: true })
+    .then((user) => {
+      if (user === null) {
+        throw new NotFoundError('Пользователь по указанному _id не найден.');
+      }
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new ValidationError('Переданы некорректные данные при обновлении профиля.'));
+        return;
+      }
+      if (err.name === 'CastError') {
+        next(new ValidationError('Невалидный id.'));
+        return;
+      }
+      next(err);
+    });
+};
+
+module.exports.createUser = (req, res, next) => {
+  const {
+    email, name, password,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      email, name, password: hash,
+    }))
+    .then((user) => {
+      const newUser = Object.assign(user, { password: undefined });
+      res.status(200).send(newUser);
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new ValidationError('Переданы некорректные данные при создании пользователя.'));
+        return;
+      }
+      if (err.name === 'MongoError' && err.code === 11000) {
+        next(new ConflictError('Указанный email, уже использвуется.'));
+        return;
+      }
+      next(err);
+    });
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      if (user === null) {
+        throw new NotFoundError('Пользователь не найден.');
+      }
+      res.status(200).send({ token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' }) });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new UnauthorizedError('Переданы некорректные данные.'));
+        return;
+      }
+      next(err);
+    });
+};
