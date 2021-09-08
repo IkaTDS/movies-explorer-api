@@ -30,6 +30,7 @@ module.exports.validateMovieCreation = celebrate({
     thumbnail: Joi.string().required().pattern(URL_PATTERN),
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
+    movieId: Joi.number().required(),
   }),
 });
 
