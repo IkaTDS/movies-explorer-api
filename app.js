@@ -36,7 +36,7 @@ app.use('*', cors(options));
 app.use(bodyParser.json());
 app.use(helmet());
 
-mongoose.connect('mongodb://localhost:27017/bitfilmsdb');
+mongoose.connect('mongodb://localhost:27017/moviesdb');
 
 app.use(requestLogger);
 app.use(limiter);
