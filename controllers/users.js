@@ -10,12 +10,12 @@ const UnauthorizedError = require('../errors/unauthorized-err');
 const { JWT_SECRET = 'secret-key' } = process.env;
 
 module.exports.getUser = (req, res, next) => {
-  User.findById(req.params.userId)
+  User.findById(req.user._id)
     .then((user) => {
       if (user === null) {
         throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
-      res.status(200).send(user);
+      res.status(200).send({ email: user.email, name: user.name });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -35,7 +35,7 @@ module.exports.updateUser = (req, res, next) => {
       if (user === null) {
         throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
-      res.status(200).send(user);
+      res.status(200).send({ email: user.email, name: user.name });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {

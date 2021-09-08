@@ -1,8 +1,8 @@
+const Movie = require('../models/movie');
+
 const NotFoundError = require('../errors/not-found-err');
 const ValidationError = require('../errors/validation-err');
 const ForbiddenError = require('../errors/forbidden-err');
-
-const Movie = require('../models/movie');
 
 module.exports.getMovies = (req, res, next) => {
   Movie.find({})
@@ -10,7 +10,7 @@ module.exports.getMovies = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.creatMovie = (req, res, next) => {
+module.exports.createMovie = (req, res, next) => {
   const {
     country,
     director,
@@ -25,6 +25,8 @@ module.exports.creatMovie = (req, res, next) => {
     movieId,
   } = req.body;
 
+  const owner = req.user._id;
+
   Movie.create({
     country,
     director,
@@ -37,6 +39,7 @@ module.exports.creatMovie = (req, res, next) => {
     nameEN,
     thumbnail,
     movieId,
+    owner,
   })
     .then((movie) => res.status(200).send(movie))
     .catch((err) => {
@@ -48,7 +51,7 @@ module.exports.creatMovie = (req, res, next) => {
     });
 };
 
-module.exports.deleteCard = (req, res, next) => {
+module.exports.deleteMovie = (req, res, next) => {
   const { movieId } = req.params;
 
   Movie.findById(movieId)
