@@ -1,6 +1,6 @@
 # Дипломная работа Movie Explorer (бэкенд)
 
-https://irakliy-diplom.nomoredomains.club
+https://api.irakliy-diplom.nomoredomains.club
 
 ## Используется
 

@@ -3,21 +3,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const { login, createUser } = require('./controllers/users');
-const auth = require('./middlewares/auth');
-const NotFoundError = require('./errors/not-found-err');
 const errors = require('./errors/errors');
-const { validateSignUp, validateSignIn, validateAuthorization } = require('./middlewares/validation');
+const { limiter } = require('./middlewares/limiter');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-
-const { PORT = 3000 } = process.env;
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-});
+const routes = require('./routes');
+const { PORT, DB } = require('./constants/config');
 
 const app = express();
 
@@ -36,20 +27,14 @@ app.use('*', cors(options));
 app.use(bodyParser.json());
 app.use(helmet());
 
-mongoose.connect('mongodb://localhost:27017/moviesdb');
+mongoose.connect(DB);
+
+app.use(routes);
 
 app.use(requestLogger);
 app.use(limiter);
 
-app.post('/signin', validateSignIn, login);
-app.post('/signup', validateSignUp, createUser);
-
-app.use('/users', validateAuthorization, auth, require('./routes/users'));
-app.use('/movies', validateAuthorization, auth, require('./routes/movies'));
-
 app.use(errorLogger);
-
-app.use('*', (req, res, next) => next(new NotFoundError('Страница не существует')));
 
 app.use(joiErrors());
 app.use((err, req, res, next) => {

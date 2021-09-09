@@ -6,6 +6,7 @@ const NotFoundError = require('../errors/not-found-err');
 const ValidationError = require('../errors/validation-err');
 const ConflictError = require('../errors/conflict-err');
 const UnauthorizedError = require('../errors/unauthorized-err');
+const { errorMessage } = require('../constants/constants');
 
 const { JWT_SECRET = 'secret-key' } = process.env;
 
@@ -13,13 +14,13 @@ module.exports.getUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (user === null) {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
+        throw new NotFoundError(errorMessage.userNotFoundError);
       }
       res.status(200).send({ email: user.email, name: user.name });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new ValidationError('Невалидный id'));
+        next(new ValidationError(errorMessage.userIdValidationError));
         return;
       }
       next(err);
@@ -33,17 +34,17 @@ module.exports.updateUser = (req, res, next) => {
   User.findByIdAndUpdate(currentUser, { $set: { email, name } }, { new: true, runValidators: true })
     .then((user) => {
       if (user === null) {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
+        throw new NotFoundError(errorMessage.userNotFoundError);
       }
       res.status(200).send({ email: user.email, name: user.name });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные при обновлении профиля.'));
+        next(new ValidationError(errorMessage.updateUserValidationError));
         return;
       }
       if (err.name === 'CastError') {
-        next(new ValidationError('Невалидный id.'));
+        next(new ValidationError(errorMessage.userIdValidationError));
         return;
       }
       next(err);
@@ -56,23 +57,25 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
 
   bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      email, name, password: hash,
-    }))
-    .then((user) => {
-      const newUser = Object.assign(user, { password: undefined });
-      res.status(200).send(newUser);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ValidationError('Переданы некорректные данные при создании пользователя.'));
-        return;
-      }
-      if (err.name === 'MongoError' && err.code === 11000) {
-        next(new ConflictError('Указанный email, уже использвуется.'));
-        return;
-      }
-      next(err);
+    .then((hash) => {
+      User.create({
+        email, name, password: hash,
+      })
+        .then((user) => {
+          const newUser = Object.assign(user, { password: undefined });
+          res.status(200).send(newUser);
+        })
+        .catch((err) => {
+          if (err.name === 'ValidationError') {
+            next(new ValidationError(errorMessage.createUserValidationError));
+            return;
+          }
+          if (err.name === 'MongoServerError' && err.code === 11000) {
+            next(new ConflictError(errorMessage.conflictError));
+            return;
+          }
+          next(err);
+        });
     });
 };
 
@@ -82,13 +85,13 @@ module.exports.login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       if (user === null) {
-        throw new NotFoundError('Пользователь не найден.');
+        throw new NotFoundError(errorMessage.userNotFoundError);
       }
       res.status(200).send({ token: jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' }) });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new UnauthorizedError('Переданы некорректные данные.'));
+        next(new UnauthorizedError(errorMessage.wrongUnauthorizedError));
         return;
       }
       next(err);

@@ -1,0 +1,17 @@
+module.exports.errorMessage = {
+  createMovieValidationError: 'Переданы некорректные данные при создании фильма.',
+  updateUserValidationError: 'Переданы некорректные данные при обновлении профиля.',
+  createUserValidationError: 'Переданы некорректные данные при создании пользователя.',
+  movieIdValidationError: 'Невалидный id.',
+  userIdValidationError: 'Невалидный id.',
+  movieNotFoundError: 'Фильм по указанному _id не найден.',
+  userNotFoundError: 'Пользователь по указанному _id не найден.',
+  pageNotFoundError: 'Страница не существует',
+  deleteMovieForbiddenError: 'Нет прав на удаление фильма.',
+  authForbiddenError: 'Ошибка авторизации.',
+  unauthorizedError: 'Необходима авторизация.',
+  wrongUnauthorizedError: 'Переданы некорректные данные.',
+  userLoginUnauthorizedError: 'Неправильные почта или пароль.',
+  conflictError: 'Указанный email, уже использвуется.',
+  linkError: 'Передана некорректная ссылка.',
+};
