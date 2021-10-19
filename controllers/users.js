@@ -22,7 +22,7 @@ module.exports.getUser = (req, res, next) => {
       if (user === null) {
         throw new NotFoundError(errorMessage.userNotFoundError);
       }
-      res.status(200).send({ email: user.email, name: user.name, _id: user._id });
+      res.status(200).send({ email: user.email, name: user.name });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
