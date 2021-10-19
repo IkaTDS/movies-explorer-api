@@ -13,19 +13,19 @@ const { PORT, DB } = require('./constants/config');
 const app = express();
 
 const options = {
-  origin: [
-    // '*',
-    'http://irakliy-diplom.nomoredomains.club',
-    'https://irakliy-diplom.nomoredomains.club',
-    'http://localhost:3000',
-  ],
+  // origin: [
+  //   'http://irakliy-diplom.nomoredomains.club',
+  //   'https://irakliy-diplom.nomoredomains.club',
+  //   'http://localhost:3000',
+  // ],
+  origin: '*',
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   preflightContinue: false,
   optionsSuccessStatus: 204,
   allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
 };
-app.use('*', cors(options));
-// app.use(cors(options));
+// app.use('*', cors(options));
+app.use(cors(options));
 
 app.use(bodyParser.json());
 app.use(helmet());
