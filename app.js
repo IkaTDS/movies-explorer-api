@@ -16,6 +16,7 @@ const options = {
   origin: [
     'http://irakliy-diplom.nomoredomains.club',
     'https://irakliy-diplom.nomoredomains.club',
+    'http://localhost:3000',
   ],
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   preflightContinue: false,
