@@ -5,6 +5,12 @@ const ValidationError = require('../errors/validation-err');
 const ForbiddenError = require('../errors/forbidden-err');
 const { errorMessage } = require('../constants/constants');
 
+module.exports.deleteMovies = (req, res, next) => {
+  Movie.deleteMany({})
+    .then(() => res.status(200).send('Data deleted'))
+    .catch(next);
+};
+
 module.exports.getMovies = (req, res, next) => {
   Movie.find({})
     .then((movies) => res.status(200).send(movies))
